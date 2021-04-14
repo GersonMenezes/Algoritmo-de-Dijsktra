@@ -1,7 +1,20 @@
+/*Essa é uma implementação em c do algoritmo de dijkstra.
+Uma matriz de inteiro 20x20, estatica, foi criada para guardar as conexoes das arestas. 
+nVertices é uma variável global que guarda o numero de vertices. 
+Qualquer vertice podera ser o ponto de origem como tambem o ponto de destino.
+Toda vertice sera identificada por um id, que é um inteiro.
+Toda vertice nova criada recebera o id "n" (n é o numero de vertice ja estabelecido).
+O primeiro id é 0, o segundo é 1, o terceiro 3 e assim sucessivamente.
+Ao se excluir um vertice, por fim de facilidade, o ultimo vertice recebera o id do vertice retirado.
+Ao se perguntar se uma nova vertice "recebe" a aresta, significa que a aresta tera o sentido
+voltado para si, enquanto que "leva" a aresta, o sentido sera para a outra vertice de conexao.*/
+
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
 #include <limits.h>
+
+#define MAXIMO_DE_VERTICES 20
 
 struct vertice{
 	int id;
@@ -13,10 +26,10 @@ typedef struct vertice v;
 
 void carregarValoresDeVertices(v **vertices);
 void menorCaminho(v **vertices, int vOrigem);
-int buscaAberto(v **vertices);
-int vericarPercurso(v **vertices, int vOrigem, int vDestino);
+int buscaAberto(v **vertices);                                   // Busca vertices abertos
+int vericarPercurso(v **vertices, int vOrigem, int vDestino);	 // Verifica se percurso entre dois pontos é validos
 void mostrarMatrizDeAdjacencia();
-void analisarCaminho(v **vertices);
+void analisarCaminho(v **vertices);								 // Analisa dois pontos dado pelo usuario
 void adicionarVertice(v **vertices);
 void retirarVertice(v **vertices);
 void editarConexoes();
@@ -256,68 +269,80 @@ void adicionarVertice(v **vertices){
 
 	int id = 0, tamAresta = 0, x = 0;
 	int sentidoAresta = 0;
-	nVertices++;
-	*vertices = (v*) realloc(*vertices, sizeof(v) * nVertices);
 
-	printf("\n\nO novo vertice tera o id: %d \nVamos digitar suas conexoes...\n", nVertices-1);
-	do{
-		
-		printf("\nDigite o id do vertice com o qual sera feito conexao: ");
-		scanf("%d", &id);
-		printf("\nA nova vertice leva ou recebe a aresta?\n");
-		printf("0. Leva\n1. Recebe\n2. Leva e Recebe\nEscreva a opcao: ");
-		scanf("%d", &sentidoAresta);
-		printf("\nDigite a distancia da aresta: ");
-		scanf("%d", &tamAresta);
-		
-		if(id >= 0 && id < nVertices){
-			if(sentidoAresta == 0){
-				mAdjacentes[nVertices-1][id] = tamAresta;
-			}
-			else if(sentidoAresta == 1){
-				mAdjacentes[id][nVertices-1] = tamAresta;
-			}
-			else if(sentidoAresta == 2){
-				mAdjacentes[nVertices-1][id] = tamAresta;
-				mAdjacentes[id][nVertices-1] = tamAresta;
-			}
-			else{
-				printf("\n\nOpcao invalida\n\n");
-			}
+	if(nVertices == MAXIMO_DE_VERTICES){
+		printf("\n\nVocê atingiu o numero maximo de vertice. Escolha outra acao.\n");
+	}
+	else{
+		nVertices++;
+		*vertices = (v*) realloc(*vertices, sizeof(v) * nVertices);
 
-		}else{
-			printf("\nVertice inexistente, tente novamente");
-		}
-		printf("\nDeseja adicionar outra conexao? \n0. Não\n1. Sim\nEscreva a opcao: ");
-		scanf("%d", &x);
+		printf("\n\nO novo vertice tera o id: %d \nVamos digitar suas conexoes...\n", nVertices-1);
+		do{
+			
+			printf("\nDigite o id do vertice com o qual sera feito conexao: ");
+			scanf("%d", &id);
+			printf("\nA nova vertice leva ou recebe a aresta?\n");
+			printf("0. Leva\n1. Recebe\n2. Leva e Recebe\nEscreva a opcao: ");
+			scanf("%d", &sentidoAresta);
+			printf("\nDigite a distancia da aresta: ");
+			scanf("%d", &tamAresta);
+			
+			if(id >= 0 && id < nVertices){
+				if(sentidoAresta == 0){
+					mAdjacentes[nVertices-1][id] = tamAresta;
+				}
+				else if(sentidoAresta == 1){
+					mAdjacentes[id][nVertices-1] = tamAresta;
+				}
+				else if(sentidoAresta == 2){
+					mAdjacentes[nVertices-1][id] = tamAresta;
+					mAdjacentes[id][nVertices-1] = tamAresta;
+				}
+				else{
+					printf("\n\nOpcao invalida\n\n");
+				}
 
-	}while(x != 0);
+			}else{
+				printf("\nVertice inexistente, tente novamente");
+			}
+			printf("\nDeseja adicionar outra conexao? \n0. Não\n1. Sim\nEscreva a opcao: ");
+			scanf("%d", &x);
+
+		}while(x != 0);
+	}
 }
 void retirarVertice(v **vertices){
 
 	int idOut = 0;
 
-	printf("Digite o id da vertice que queres retirar: ");
-	scanf("%d", &idOut);
-
-	if(idOut >= 0 && idOut < nVertices){
-
-		for(int i = 0; i < nVertices; i++){
-
-			mAdjacentes[idOut][i] = mAdjacentes[nVertices-1][i];
-			if(mAdjacentes[i][nVertices-1]>-1){
-				mAdjacentes[i][idOut] = mAdjacentes[i][nVertices-1];
-			}
-			else{
-				mAdjacentes[i][idOut] = -1;
-			}
-		}
-		nVertices--;
-		*vertices = (v*) realloc(*vertices, sizeof(v) * nVertices);
-		printf("\n\nRetirado com sucesso. O ultimo vertice recebera o id do vertice retirado\n\n");
+	if(nVertices < 1){
+		printf("\nNao ha vertice para ser retirado\n");
 	}
 	else{
-		printf("\nNao existe essa vertice...\n");
+		
+		printf("Digite o id da vertice que queres retirar: ");
+		scanf("%d", &idOut);
+
+		if(idOut >= 0 && idOut < nVertices){
+
+			for(int i = 0; i < nVertices; i++){
+
+				mAdjacentes[idOut][i] = mAdjacentes[nVertices-1][i];
+				if(mAdjacentes[i][nVertices-1]>-1){
+					mAdjacentes[i][idOut] = mAdjacentes[i][nVertices-1];
+				}
+				else{
+					mAdjacentes[i][idOut] = -1;
+				}
+			}
+			nVertices--;
+			*vertices = (v*) realloc(*vertices, sizeof(v) * nVertices);
+			printf("\n\nRetirado com sucesso. O ultimo vertice recebera o id do vertice retirado\n\n");
+		}
+		else{
+			printf("\nNao existe essa vertice...\n");
+		}
 	}
 }
 void editarConexoes(){
@@ -343,6 +368,7 @@ void editarConexoes(){
 		scanf("%d", &idAresta);
 		if(idAresta >= 0 && idAresta<nVertices && idAresta != editVert){
 			mAdjacentes[editVert][idAresta] = -1;
+			printf("\n\nAresta retirada com sucesso\n");
 		}
 		else
 			printf("\n\nInvalid option...\n\n");
@@ -356,6 +382,7 @@ void editarConexoes(){
 			scanf("%d", &tamAresta);
 			if(idAresta >= 0 && idAresta<nVertices){
 				mAdjacentes[editVert][idAresta] = tamAresta;
+				printf("\n\nAresta adicionada com sucesso\n");
 			}
 			else
 				printf("\n\nInvalid option...\n\n");
